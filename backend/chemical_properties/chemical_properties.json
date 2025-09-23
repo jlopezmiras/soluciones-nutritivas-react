@@ -1,0 +1,13 @@
+[
+  { "name": "nitrato", "formula": "NO3", "valence": -1, "molar_mass": 62 },
+  { "name": "fosforo", "formula": "H2PO4", "valence": -1, "molar_mass": 97 },
+  { "name": "sulfato", "formula": "SO4", "valence": -2, "molar_mass": 96 },
+  { "name": "bicarbonato", "formula": "HCO3", "valence": -1, "molar_mass": 61 },
+  { "name": "carbonato", "formula": "CO3", "valence": -2, "molar_mass": 60 },
+  { "name": "cloruro", "formula": "Cl", "valence": -1, "molar_mass": 35.5 },
+  { "name": "sodio", "formula": "Na", "valence": 1, "molar_mass": 23 },
+  { "name": "calcio", "formula": "Ca", "valence": 2, "molar_mass": 40.1 },
+  { "name": "magnesio", "formula": "Mg", "valence": 2, "molar_mass": 24.3 },
+  { "name": "potasio", "formula": "K", "valence": 1, "molar_mass": 39.1 },
+  { "name": "amonio", "formula": "NH4", "valence": 1, "molar_mass": 18 }
+]

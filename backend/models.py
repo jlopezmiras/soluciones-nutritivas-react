@@ -7,6 +7,8 @@ class Irrigation_Water_DB(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, unique=True, index=True)
+    date = Column(String, nullable=True)
+    description = Column(String, nullable=True)
 
     nitrato     = Column(Float, default=0.0)
     fosforo     = Column(Float, default=0.0)

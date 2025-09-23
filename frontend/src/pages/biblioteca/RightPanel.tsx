@@ -1,4 +1,4 @@
-import React, { use, useState } from 'react';
+import React, { use, useEffect, useState } from 'react';
 import {
   Box,
   Heading,
@@ -21,15 +21,26 @@ import {
   MenuList,
 } from '@chakra-ui/react';
 import { FiSearch, FiFilter, FiPlus, FiMoreVertical, FiEdit2, FiEye, FiMoreHorizontal, FiTrash2 } from 'react-icons/fi';
+import api from '../../api';
 
 interface RightPanelProps {
   title: string;
-  data: Array<Record<string, any>>;
   panelKey: string;          // nueva prop para identificar qué panel es
   onAdd: (panelKey: string) => void;
 }
 
-export default function RightPanel({ title, data, panelKey, onAdd }: RightPanelProps) {
+
+interface TableRow {
+  id: number;
+  Nombre: string;
+  pH: number;
+  Conductividad: number;
+  Fecha: string;
+  Observaciones: string;
+}
+
+
+export default function RightPanel({ title, panelKey, onAdd }: RightPanelProps) {
   const [search, setSearch] = useState('');
 
   const headerKeys = [
@@ -44,11 +55,11 @@ export default function RightPanel({ title, data, panelKey, onAdd }: RightPanelP
     "Nombre", "pH", "Conductividad", "Fecha", "Observaciones"]
 
   // Filtrar los datos según la búsqueda
-  const filteredData = data.filter((row) =>
-    Object.values(row).some((val) =>
-      String(val).toLowerCase().includes(search.toLowerCase())
-    )
-  );
+  // const filteredData = data.filter((row) =>
+  //   Object.values(row).some((val) =>
+  //     String(val).toLowerCase().includes(search.toLowerCase())
+  //   )
+  // );
 
   const headingColor = useColorModeValue("light.primary.main","dark.accent.main");
   // const bgTableColor = useColorModeValue("light.primary.50","dark.background.800");
@@ -61,16 +72,77 @@ export default function RightPanel({ title, data, panelKey, onAdd }: RightPanelP
   const handleEdit = (row: Record<string, any>) => {
     alert(`Editar: ${row.Nombre}`);
   };
+  
+  const handleDelete = async (row: TableRow) => {
+    try {
+      let endpoint = '';
+      switch (panelKey) {
+        case 'watering': endpoint = `/waters/${row.id}/`; break;
+        case 'fertilizers': endpoint = `/fertilizers/${row.id}/`; break;
+        case 'solutions': endpoint = `/solutions/${row.id}/`; break;
+      }
 
-  const handleDelete = (row: Record<string, any>) => {
-    alert(`Borrar: ${row.Nombre}`);
-  }
+      await api.delete(endpoint);
+      // actualizar localmente
+      setTableData(prev => prev.filter(item => item.id !== row.id));
+      setFilteredData(prev => prev.filter(item => item.id !== row.id));
+    } catch (error) {
+      console.error("Error deleting:", error);
+    }
+  };
 
 
   // Dentro del componente
   const addNewItem = () => {
     onAdd(panelKey); // llama al callback con la key del panel
   };
+
+
+  //New
+  const [tableData, setTableData] = useState<TableRow[]>([]);
+  const [filteredData, setFilteredData] = useState<TableRow[]>([]);
+   // Traer datos según panelKey
+    useEffect(() => {
+      const fetchData = async () => {
+        try {
+          let endpoint = '';
+          switch (panelKey) {
+            case 'watering': endpoint = '/waters/'; break;
+            case 'fertilizers': endpoint = '/fertilizers/'; break;
+            case 'solutions': endpoint = '/solutions/'; break;
+            default: return;
+          }
+
+          const response = await api.get(endpoint);
+          const rows = response.data.map((w: any) => ({
+            id: w.id,
+            Nombre: w.name,
+            pH: w.ph,
+            Conductividad: w.conductivity,
+            Fecha: w.date,
+            Observaciones: w.description,
+          }));
+
+          setTableData(rows);
+          setFilteredData(rows);
+        } catch (error) {
+          console.error("Error fetching data:", error);
+        }
+      };
+
+      fetchData();
+    }, [panelKey]);
+
+    // Filtrar datos al buscar
+    useEffect(() => {
+      setFilteredData(
+        tableData.filter(row =>
+          Object.values(row).some(val =>
+            String(val).toLowerCase().includes(search.toLowerCase())
+          )
+        )
+      );
+    }, [search, tableData]);
 
 
   return (
@@ -139,10 +211,10 @@ export default function RightPanel({ title, data, panelKey, onAdd }: RightPanelP
       </Thead>
 
       <Tbody>
-        {filteredData.map((row, index) => (
-          <Tr key={index} borderBottom="1px solid" borderColor="gray.200">
-            {headerKeys.map((key, i) => (
-              <Td key={i}>{row[key]}</Td>
+        {filteredData.map(row => (
+          <Tr key={row.id} borderBottom="1px solid" borderColor="gray.200">
+            {headerKeys.map(h => (
+              <Td key={h}>{row[h as keyof TableRow]}</Td>
             ))}
 
             {/* Columna de acciones con hover */}
@@ -193,7 +265,7 @@ export default function RightPanel({ title, data, panelKey, onAdd }: RightPanelP
                     icon={<FiTrash2 />}
                     size="sm"
                     variant="ghost"
-                    onClick={() => console.log("Borrar", row)}
+                    onClick={() => handleDelete(row)}
                   />
                 </HStack>
               </Box>

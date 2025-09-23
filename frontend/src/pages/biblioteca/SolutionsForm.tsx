@@ -1,19 +1,32 @@
-import React, { useState } from "react";
 import {
-  Box,
+  Grid,
+  GridItem,
   Button,
   FormControl,
   FormLabel,
   Input,
-  VStack,
-  Heading,
   SimpleGrid,
+  Textarea,
+  VStack,
   useToast,
+  Heading,
+  Divider,
+  HStack,
+  Flex,
+  Box,
+  Select,
+  InputGroup,
+  InputRightElement,
 } from "@chakra-ui/react";
-import api from "../../api"; // tu axios.create
+
+import api from "../../api";
+import { useState } from "react";
+import { form } from "framer-motion/client";
 
 interface AguaRiego {
-  nombre: string;
+  name: string;
+  date: string;
+  description: string;
   nitrato: number;
   carbonato: number;
   magnesio: number;
@@ -25,11 +38,34 @@ interface AguaRiego {
   amonio: number;
   bicarbonato: number;
   calcio: number;
+  ph: number;
+  conductivity: number;
 }
 
-export default function SolutionsForm() {
+interface Props {
+  onBack: () => void; // callback para volver atrás
+}
+
+
+type PropQuimica = 
+  | "nitrato"
+  | "carbonato"
+  | "fosforo"
+  | "cloruro"
+  | "potasio"
+  | "sodio"
+  | "amonio"
+  | "bicarbonato"
+  | "calcio"
+  | "magnesio"
+  | "sulfato"
+
+
+export default function SolutionsForm({ onBack }: Props) {
   const [values, setValues] = useState<AguaRiego>({
-    nombre: "",
+    name: "",
+    date: "",
+    description: "",
     nitrato: 0,
     carbonato: 0,
     magnesio: 0,
@@ -41,36 +77,64 @@ export default function SolutionsForm() {
     amonio: 0,
     bicarbonato: 0,
     calcio: 0,
+    ph: 0,
+    conductivity: 0,
+  });
+
+  const [units, setUnits] = useState<Record<PropQuimica, string>>({
+    nitrato: "mmol/L",
+    carbonato: "mmol/L",
+    fosforo: "mmol/L",
+    cloruro: "mmol/L",
+    potasio: "mmol/L",
+    sodio: "mmol/L",
+    amonio: "mmol/L",
+    bicarbonato: "mmol/L",
+    calcio: "mmol/L",
+    magnesio: "mmol/L",
+    sulfato: "mmol/L",
   });
 
   const toast = useToast();
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement>,
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
     field: keyof AguaRiego
   ) => {
-    const value = field === "nombre" ? e.target.value : parseFloat(e.target.value);
+    const value =
+      field === "name" || field === "date" || field === "description"
+        ? e.target.value
+        : parseFloat(e.target.value) || 0;
     setValues({ ...values, [field]: value });
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    try {
-      // Llamada POST a la API para guardar el agua de riego
-      const response = await api.post<AguaRiego>("/waters/", values);
+    const payload = {
+      ...values,
+      units,
+    };
 
+    console.log("Payload a enviar:", payload);
+
+    try {
+      await api.post<AguaRiego>("/waters/", payload);
+      
+      // Mostrar toast
       toast({
         title: "Agua de riego guardada",
-        description: `Nombre: ${response.data.nombre}`,
+        description: `Nombre: ${values.name}`,
         status: "success",
-        duration: 3000,
+        duration: 2500, // dura 1.5 segundos
         isClosable: true,
       });
 
-      // Reiniciar formulario
+      // Resetear formulario
       setValues({
-        nombre: "",
+        name: "",
+        date: "",
+        description: "",
         nitrato: 0,
         carbonato: 0,
         magnesio: 0,
@@ -82,9 +146,30 @@ export default function SolutionsForm() {
         amonio: 0,
         bicarbonato: 0,
         calcio: 0,
+        ph: 0,
+        conductivity: 0,
       });
+      setUnits({
+        nitrato: "mmol/L",
+        carbonato: "mmol/L",
+        fosforo: "mmol/L",
+        cloruro: "mmol/L",
+        potasio: "mmol/L",
+        sodio: "mmol/L",
+        amonio: "mmol/L",
+        bicarbonato: "mmol/L",
+        calcio: "mmol/L",
+        magnesio: "mmol/L",
+        sulfato: "mmol/L",
+      });
+
+      // Llamar a onBack después de un pequeño delay
+      setTimeout(() => {
+        onBack();
+      }, 10);
+
     } catch (error) {
-      console.error("Error guardando agua de riego:", error);
+      console.log("Error saving water:", error);
       toast({
         title: "Error",
         description: "No se pudo guardar el agua de riego",
@@ -95,46 +180,197 @@ export default function SolutionsForm() {
     }
   };
 
+
+  const maxWNumericInputs = "180px";
+
   return (
-    <Box maxW="2xl" mx="auto" mt={10} p={6} borderWidth={1} borderRadius="md" boxShadow="md">
-      <Heading mb={6} textAlign="center">
-        Agregar Agua de Riego
-      </Heading>
-      <form onSubmit={handleSubmit}>
-        <VStack spacing={4} align="stretch">
-          <FormControl>
-            <FormLabel>Nombre</FormLabel>
-            <Input
-              value={values.nombre}
-              onChange={(e) => handleChange(e, "nombre")}
-            />
-          </FormControl>
+    <form onSubmit={handleSubmit}>
+      <Grid
+        templateColumns="max-content 1fr"
+        gap={4}
+        columnGap={82}
+        rowGap={8}
+        m={6}
+        ml={20}
+      >
+        <GridItem>
+          <Heading size="sm">{"Información general"}</Heading>
+        </GridItem>
+        <GridItem>
+          <VStack spacing={4} align="stretch" w="100%">
+            {/* Fila horizontal: Nombre + Fecha */}
+            <HStack spacing={4} align="flex-start">
+              <FormControl flex={1}>
+                <FormLabel mb={0}>Nombre</FormLabel>
+                <Input
+                  w="100%"       // se estira ocupando todo el espacio disponible
+                  value={values.name}
+                  onChange={(e) => handleChange(e, "name")}
+                />
+              </FormControl>
 
-          <Box p={4} borderWidth={1} borderRadius="md" bg="gray.50">
-            <Heading size="sm" mb={3}>
-              Propiedades Químicas
-            </Heading>
-            <SimpleGrid columns={[2, 3]} spacing={3}>
-              {(
-                ["nitrato","carbonato","magnesio","fosforo","cloruro","potasio","sulfato","sodio","amonio","bicarbonato","calcio"] as (keyof Omit<AguaRiego,"nombre">)[]
-              ).map((prop) => (
+              <FormControl w="200px">  {/* ancho fijo para Fecha */}
+                <FormLabel mb={0}>Fecha</FormLabel>
+                <Input
+                  type="date"
+                  value={values.date}
+                  onChange={(e) => handleChange(e, "date")}
+                />
+              </FormControl>
+            </HStack>
+
+            {/* Observaciones debajo */}
+            <FormControl>
+              <FormLabel mb={0}>Descripción</FormLabel>
+              <Input
+                type="text"
+                w="100%"         // ocupa todo el ancho
+                value={values.description}
+                onChange={(e) => handleChange(e, "description")}
+              />
+            </FormControl>
+          </VStack>
+        </GridItem>
+
+        <GridItem gridColumn="1 / -1">
+            <VStack spacing={1} my={4}>
+            <Divider />
+            <Divider />
+          </VStack>
+        </GridItem>
+
+        <GridItem>
+          <Heading size="sm">{"Cationes"}</Heading>
+        </GridItem>
+        <GridItem>
+          <SimpleGrid columns={{ base: 1, sm: 4, md: 5, lg: 6 }} spacing={6}>
+            {["calcio", "magnesio", "potasio", "sodio", "amonio"].map(
+              (prop) => (
                 <FormControl key={prop}>
-                  <FormLabel>{prop.charAt(0).toUpperCase() + prop.slice(1)}</FormLabel>
-                  <Input
-                    type="number"
-                    value={values[prop]}
-                    onChange={(e) => handleChange(e, prop)}
-                  />
+                  <FormLabel textTransform="capitalize" mb={1}>
+                    {prop}
+                  </FormLabel>
+                    <InputGroup>
+                      <Input
+                        borderRadius={"lg"}
+                        maxW={maxWNumericInputs}
+                        pr="80px"
+                        step="any"
+                        type="number"
+                        placeholder="0.00"
+                        onChange={(e) => handleChange(e, prop as keyof AguaRiego)}
+                      />
+                      <InputRightElement width="100px">
+                        <Select
+                          value={units[prop as PropQuimica]}
+                          onChange={(e) => setUnits({ ...units, [prop as PropQuimica]: e.target.value })}
+                          size="sm"
+                          border="none"
+                          bg="transparent"
+                          p={0}
+                          textAlign={"right"}
+                        >
+                          <option value="mmol/L">mmol/L</option>
+                          <option value="mg/L">mg/L</option>
+                          <option value="meq/L">meq/L</option>
+                        </Select>
+                      </InputRightElement>
+                    </InputGroup>
                 </FormControl>
-              ))}
-            </SimpleGrid>
-          </Box>
+              )
+            )}
+          </SimpleGrid>
+        </GridItem>
 
-          <Button type="submit" colorScheme="blue">
-            Guardar Agua
-          </Button>
-        </VStack>
-      </form>
-    </Box>
+        <GridItem gridColumn="1 / -1">
+          <Divider />
+        </GridItem>
+
+        <GridItem>
+          <Heading size="sm">{"Aniones"}</Heading>
+        </GridItem>
+        <GridItem>
+          <SimpleGrid columns={{ base: 1, sm: 4, md: 5, lg: 6 }} spacing={6}>
+            {[
+              "nitrato",
+              "carbonato",
+              "fosforo",
+              "cloruro",
+              "sulfato",
+              "bicarbonato",
+            ].map((prop) => (
+              <FormControl key={prop}>
+                <FormLabel textTransform="capitalize" mb={1}>{prop}</FormLabel>
+                  <InputGroup>
+                    <Input
+                      type="number"
+                      step={"any"}
+                      placeholder="0.00"
+                      onChange={(e) => handleChange(e, prop as keyof AguaRiego)}
+                    />
+                    <InputRightElement width="100px">
+                      <Select
+                        value={units[prop as PropQuimica]}
+                        onChange={(e) => setUnits({ ...units, [prop as PropQuimica]: e.target.value })}
+                        size="sm"
+                        border="none"
+                        bg="transparent"
+                        p={0}
+                        textAlign={"right"}
+                      >
+                        <option value="mmol/L">mmol/L</option>
+                        <option value="mg/L">mg/L</option>
+                        <option value="meq/L">meq/L</option>
+                      </Select>
+                    </InputRightElement>
+                  </InputGroup>
+              </FormControl>
+            ))}
+          </SimpleGrid>
+        </GridItem>
+
+        <GridItem gridColumn="1 / -1">
+          <Divider />
+        </GridItem>
+
+        <GridItem>
+          <Heading size="sm">{"Otras propiedades"}</Heading>
+        </GridItem>
+        <GridItem>
+          <SimpleGrid columns={{ base: 1, sm: 4, md: 5, lg: 6 }} spacing={6}>
+            <FormControl>
+              <FormLabel mb={1}>pH</FormLabel>
+              <Input maxW={maxWNumericInputs}
+                type="number"
+                step="any"
+                placeholder="0.00"
+                onChange={(e) => handleChange(e, "ph")}
+              />
+            </FormControl>
+            <FormControl>
+              <FormLabel mb={1}>Conductividad</FormLabel>
+              <Input maxW={maxWNumericInputs}
+                type="number"
+                step="any"
+                placeholder="0.00"
+                onChange={(e) => handleChange(e, "conductivity")}
+              />
+            </FormControl>
+          </SimpleGrid>
+        </GridItem>
+
+        {/* Botones abajo a la derecha */}
+        <GridItem gridColumn="1 / -1">
+          <Flex justify="flex-end" gap={3} mt={4}>
+            <Button variant="outline" onClick={onBack}>
+              Cancelar
+            </Button>
+            <Button type="submit" colorScheme="green">
+              Guardar
+            </Button>
+          </Flex>
+        </GridItem>
+      </Grid>
+    </form>
   );
 }

@@ -1,9 +1,11 @@
 from pydantic import BaseModel
-from typing import Optional
+from typing import Optional, Dict, Literal
 
 
 class IrrigationWaterBase(BaseModel):
     name: str
+    date: Optional[str] = None
+    description: Optional[str] = None
     nitrato: float = 0.0
     fosforo: float = 0.0
     sulfato: float = 0.0
@@ -17,6 +19,7 @@ class IrrigationWaterBase(BaseModel):
     amonio: float = 0.0
     ph: float = 0.0
     conductivity: float = 0.0
+    units: Optional[Dict[str, Literal["mmol/L", "mg/L", "meq/L"]]] = None
 
 
 class IrrigationWaterCreate(IrrigationWaterBase):

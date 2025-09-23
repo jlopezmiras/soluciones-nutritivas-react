@@ -1,4 +1,4 @@
-#!/home/javi/Documents/soluciones_nutritivas_py_react/backend/venv/bin/python3
+#!/home/jlmiras/Documentos/soluciones-nutritivas-react/backend/venv/bin/python3
 # -*- coding: utf-8 -*-
 import re
 import sys

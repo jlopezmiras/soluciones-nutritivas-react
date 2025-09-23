@@ -1,3 +1,4 @@
+from chemical_properties.chemical_properties import ValueChemicalProperty, chemicals
 from sqlalchemy.orm import Session
 from models import Irrigation_Water_DB, Fertilizer_DB
 from schemas import IrrigationWaterCreate, FertilizerCreate
@@ -5,7 +6,23 @@ from schemas import IrrigationWaterCreate, FertilizerCreate
 
 # --- Irrigation water ---
 def create_irrigation_water(db: Session, water: IrrigationWaterCreate):
-    db_water = Irrigation_Water_DB(**water.dict())
+    # Transform the units to mmol/l
+    attr_water = water.dict()
+    
+    # Lista de propiedades químicas
+    props = ['nitrato', 'carbonato', 'fosforo', 'cloruro', 'potasio', 'sodio', 'amonio', 'bicarbonato', 'calcio', 'magnesio', 'sulfato']
+    # Crear lista de listas
+    chemicalitems = [[prop, attr_water[prop], attr_water['units'][prop]] for prop in props]
+
+    for ch_field, value, unit in chemicalitems:
+        attr_water[ch_field] = ValueChemicalProperty(
+            chemical=chemicals[ch_field], 
+            value=value, 
+            unit=unit).convert_to_unit("mmol/l")
+        
+    attr_water.pop('units', None)
+
+    db_water = Irrigation_Water_DB(**attr_water)
     db.add(db_water)
     db.commit()
     db.refresh(db_water)

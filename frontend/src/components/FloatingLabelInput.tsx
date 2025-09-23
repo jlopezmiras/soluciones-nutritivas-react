@@ -1,43 +1,41 @@
-import { FormControl, FormLabel, Input, Box, } from "@chakra-ui/react";
-import { useState } from "react";
+import React, { useState } from "react";
+import { Input, FormControl, FormLabel, Box } from "@chakra-ui/react";
+import type { InputProps } from "@chakra-ui/react";
 
-interface FloatingInputProps {
+interface FloatingLabelInputProps extends InputProps {
   label: string;
-  value: string | number;
-  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  type?: string;
 }
 
-export default function FloatingInput({ label, value, onChange, type = "text" }: FloatingInputProps) {
+const FloatingLabelInput: React.FC<FloatingLabelInputProps> = ({ label, ...inputProps }) => {
   const [isFocused, setIsFocused] = useState(false);
+  const [value, setValue] = useState("");
+
+  const handleFocus = () => setIsFocused(true);
+  const handleBlur = () => setIsFocused(false);
 
   return (
-    <FormControl position="relative" mt={4}>
+    <FormControl position="relative" variant="floating" id={inputProps.id}>
       <Input
-        type={type}
+        {...inputProps}
         value={value}
-        onChange={onChange}
-        onFocus={() => setIsFocused(true)}
-        onBlur={() => setIsFocused(false)}
-        placeholder=" " // espacio en blanco para activar el floating
-        borderRadius="md"
-        borderWidth={1}
-        p={4}
+        onChange={(e) => setValue(e.target.value)}
+        onFocus={handleFocus}
+        onBlur={handleBlur}
+        placeholder=" " // necesario para que el label flote
       />
       <FormLabel
         position="absolute"
-        left={4}
-        top={value || isFocused ? "-0.8rem" : "50%"}
-        transform={value || isFocused ? "translateY(0)" : "translateY(-50%)"}
-        fontSize={value || isFocused ? "sm" : "md"}
-        color="gray.500"
+        left="3"
+        top={isFocused || value ? "-2" : "3"}
+        fontSize={isFocused || value ? "sm" : "md"}
+        color={isFocused ? "blue.500" : "gray.500"}
         pointerEvents="none"
-        transition="all 0.2s ease"
-        bg="white"
-        px={1}
+        transition="0.2s all"
       >
         {label}
       </FormLabel>
     </FormControl>
   );
-}
+};
+
+export default FloatingLabelInput;

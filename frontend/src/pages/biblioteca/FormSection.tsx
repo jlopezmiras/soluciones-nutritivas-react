@@ -1,4 +1,4 @@
-import { Box, Heading, SimpleGrid, GridItem, useBreakpointValue } from '@chakra-ui/react';
+import { Grid, GridItem, Heading, Box, useBreakpointValue, Text } from '@chakra-ui/react';
 import React from 'react';
 import type { ReactNode } from 'react';
 
@@ -11,10 +11,15 @@ export const FormSection = ({ title, children }: FormSectionProps) => {
   const isLargeScreen = useBreakpointValue({ base: false, md: true });
 
   return (
-    <SimpleGrid columns={{ base: 1, md: 2 }} spacing={10} mb={10} ml={10} pl={0}>
+    <Grid
+      templateColumns={{ base: '1fr', md: 'minmax(0, max-content) 1fr' }} // Ancho del título flexible, contenido flexible
+      gap={6}
+      mb={10}
+      w="full"
+      alignItems="flex-start" // Alinea los elementos en la parte superior
+    >
       <GridItem
         as={Box}
-        colSpan={{ base: 1, md: 1 }}
         textAlign={{ base: 'center', md: 'right' }}
         pr={{ base: 0, md: 6 }}
       >
@@ -22,11 +27,16 @@ export const FormSection = ({ title, children }: FormSectionProps) => {
           {title}
         </Heading>
       </GridItem>
-      <GridItem colSpan={{ base: 1, md: 1 }}>
-        <Box p={4} borderWidth="1px" borderRadius="lg" bg="white">
+      <GridItem>
+        <Box p={4} borderWidth="1px" borderRadius="lg" bg="white" w="100%">
           {children}
         </Box>
       </GridItem>
-    </SimpleGrid>
+    </Grid>
   );
 };
+
+
+
+
+export default FormSection;
