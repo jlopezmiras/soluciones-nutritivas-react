@@ -19,7 +19,7 @@ import {
 } from "@chakra-ui/react";
 import { FiDroplet, FiBox, FiHome } from "react-icons/fi";
 import IrrigationWaterForm from "./IrrigationWaterForm";
-import FertilizantsForm from "./FertilizantsForm";
+import FertilizerForm from "./FertilizerForm";
 import SolutionsForm from "./SolutionsForm";
 import api from "../../api";
 
@@ -91,9 +91,7 @@ const Biblioteca: React.FC = () => {
           <IrrigationWaterForm onBack={() => setActiveOption("table")}/>
       )}
       {activeOption === "form" && currentPanelKey === "fertilizers" && (
-        <Box flex="0 0 auto" alignSelf="flex-start" maxW="1000px" >
-          <FertilizantsForm/>
-        </Box>
+          <FertilizerForm onBack={() => setActiveOption("table")}/>
       )}
       {activeOption === "form" && currentPanelKey === "solutions" && (
         <SolutionsForm onBack={() => setActiveOption("table")}/>

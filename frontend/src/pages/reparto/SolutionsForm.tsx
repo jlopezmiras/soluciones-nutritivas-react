@@ -43,7 +43,8 @@ interface AguaRiego {
 }
 
 interface Props {
-  onBack: () => void; // callback para volver atrás
+  onSubmit: (data: Record<string, number>) => void;
+  onBack?: () => void; 
 }
 
 
@@ -61,7 +62,7 @@ type PropQuimica =
   | "sulfato"
 
 
-export default function SolutionsForm({ onBack }: Props) {
+export default function SolutionsForm({ onSubmit, onBack }: Props) {
   const [values, setValues] = useState<AguaRiego>({
     name: "",
     date: "",
@@ -108,76 +109,13 @@ export default function SolutionsForm({ onBack }: Props) {
     setValues({ ...values, [field]: value });
   };
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-
-    const payload = {
-      ...values,
-      units,
-    };
-
-    console.log("Payload a enviar:", payload);
-
-    try {
-      await api.post<AguaRiego>("/library/waters/", payload);
-      
-      // Mostrar toast
-      toast({
-        title: "Agua de riego guardada",
-        description: `Nombre: ${values.name}`,
-        status: "success",
-        duration: 2500, // dura 1.5 segundos
-        isClosable: true,
-      });
-
-      // Resetear formulario
-      setValues({
-        name: "",
-        date: "",
-        description: "",
-        nitrato: 0,
-        carbonato: 0,
-        magnesio: 0,
-        fosforo: 0,
-        cloruro: 0,
-        potasio: 0,
-        sulfato: 0,
-        sodio: 0,
-        amonio: 0,
-        bicarbonato: 0,
-        calcio: 0,
-        ph: 0,
-        conductivity: 0,
-      });
-      setUnits({
-        nitrato: "mmol/L",
-        carbonato: "mmol/L",
-        fosforo: "mmol/L",
-        cloruro: "mmol/L",
-        potasio: "mmol/L",
-        sodio: "mmol/L",
-        amonio: "mmol/L",
-        bicarbonato: "mmol/L",
-        calcio: "mmol/L",
-        magnesio: "mmol/L",
-        sulfato: "mmol/L",
-      });
-
-      // Llamar a onBack después de un pequeño delay
-      setTimeout(() => {
-        onBack();
-      }, 10);
-
-    } catch (error) {
-      console.log("Error saving water:", error);
-      toast({
-        title: "Error",
-        description: "No se pudo guardar el agua de riego",
-        status: "error",
-        duration: 3000,
-        isClosable: true,
-      });
-    }
+    const numericValues = Object.fromEntries(
+      Object.entries(values).map(([k, v]) => [k, parseFloat(v) || 0])
+    );
+    console.log("Submitting values:", numericValues);
+    onSubmit(numericValues);
   };
 
 

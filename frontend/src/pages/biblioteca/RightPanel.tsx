@@ -77,9 +77,9 @@ export default function RightPanel({ title, panelKey, onAdd }: RightPanelProps) 
     try {
       let endpoint = '';
       switch (panelKey) {
-        case 'watering': endpoint = `/waters/${row.id}/`; break;
-        case 'fertilizers': endpoint = `/fertilizers/${row.id}/`; break;
-        case 'solutions': endpoint = `/solutions/${row.id}/`; break;
+        case 'watering': endpoint = `library/waters/${row.id}/`; break;
+        case 'fertilizers': endpoint = `library/fertilizers/${row.id}/`; break;
+        case 'solutions': endpoint = `library/solutions/${row.id}/`; break;
       }
 
       await api.delete(endpoint);
@@ -107,9 +107,9 @@ export default function RightPanel({ title, panelKey, onAdd }: RightPanelProps) 
         try {
           let endpoint = '';
           switch (panelKey) {
-            case 'watering': endpoint = '/waters/'; break;
-            case 'fertilizers': endpoint = '/fertilizers/'; break;
-            case 'solutions': endpoint = '/solutions/'; break;
+            case 'watering': endpoint = '/library/waters/'; break;
+            case 'fertilizers': endpoint = '/library/fertilizers/'; break;
+            case 'solutions': endpoint = '/library/solutions/'; break;
             default: return;
           }
 

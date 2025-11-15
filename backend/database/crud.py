@@ -1,16 +1,16 @@
 from chemical_properties.chemical_properties import ValueChemicalProperty, chemicals
 from sqlalchemy.orm import Session
-from models import Irrigation_Water_DB, Fertilizer_DB
-from schemas import IrrigationWaterCreate, FertilizerCreate
+from database.models import Irrigation_Water_DB, Fertilizer_DB
+from api.library_schemas import IrrigationWaterCreate, FertilizerCreate
 
 
 # --- Irrigation water ---
 def create_irrigation_water(db: Session, water: IrrigationWaterCreate):
-    # Transform the units to mmol/l
-    attr_water = water.dict()
+
+    attr_water = water.model_dump()
     
     # Lista de propiedades químicas
-    props = ['nitrato', 'carbonato', 'fosforo', 'cloruro', 'potasio', 'sodio', 'amonio', 'bicarbonato', 'calcio', 'magnesio', 'sulfato']
+    props = ['no3', 'h2po4', 'so4', 'hco3', 'co3', 'cl', 'na', 'k', 'ca', 'mg', 'nh4']
     # Crear lista de listas
     chemicalitems = [[prop, attr_water[prop], attr_water['units'][prop]] for prop in props]
 
@@ -22,7 +22,13 @@ def create_irrigation_water(db: Session, water: IrrigationWaterCreate):
         
     attr_water.pop('units', None)
 
-    db_water = Irrigation_Water_DB(**attr_water)
+    # Get value of co3 and convert to hco3
+    if attr_water['co3'] > 0:
+        attr_water['hco3'] = attr_water['hco3'] + 2 * attr_water['co3']
+    attr_water.pop('co3', None)
+
+
+    db_water = Irrigation_Water_DB(**attr_water, raw_input=water.model_dump())
     db.add(db_water)
     db.commit()
     db.refresh(db_water)
@@ -55,7 +61,32 @@ def delete_irrigation_water(db: Session, water_id: int):
 
 # --- Fertilizer ---
 def create_fertilizer(db: Session, fert: FertilizerCreate):
-    db_fert = Fertilizer_DB(**fert.dict())
+    # Transform the units to mmol/l
+    attr_fert = fert.model_dump()
+
+    # Get value of hydrogenion and convert to hco3
+    attr_fert['hco3'] = 0
+    attr_fert['units']['hco3'] = 'mmol/l'
+    if attr_fert['hydrogenion'] > 0:
+        attr_fert['hco3'] = -attr_fert['hydrogenion']
+        attr_fert['units']['hco3'] = attr_fert['units']['hydrogenion']
+        
+    attr_fert.pop('hydrogenion', None)
+    
+    # Lista de propiedades químicas
+    props = ['no3', 'h2po4', 'so4', 'hco3', 'cl', 'na', 'k', 'ca', 'mg', 'nh4']
+    # Crear lista de listas
+    chemicalitems = [[prop, attr_fert[prop], attr_fert['units'][prop]] for prop in props]
+
+    for ch_field, value, unit in chemicalitems:
+        attr_fert[ch_field] = ValueChemicalProperty(
+            chemical=chemicals[ch_field], 
+            value=value, 
+            unit=unit).convert_to_unit("mmol/l")
+        
+    attr_fert.pop('units', None)
+
+    db_fert = Fertilizer_DB(**attr_fert, raw_input=fert.model_dump())
     db.add(db_fert)
     db.commit()
     db.refresh(db_fert)

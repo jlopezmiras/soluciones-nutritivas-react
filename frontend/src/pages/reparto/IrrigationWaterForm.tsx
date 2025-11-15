@@ -23,76 +23,98 @@ import api from "../../api";
 import { useState } from "react";
 import { form } from "framer-motion/client";
 
+
+
+const labels: Record<keyof AguaRiego, string> = {
+  no3: "Nitrato",
+  h2po4: "Fosfato",
+  so4: "Sulfato",
+  hco3: "Bicarbonato",
+  co3: "Carbonato",
+  cl: "Cloruro",
+  k: "Potasio",
+  ca: "Calcio",
+  mg: "Magnesio",
+  na: "Sodio",
+  nh4: "Amonio",
+  ph: "pH",
+  conductivity: "Conductividad",
+  name: "Nombre",
+  date: "Fecha",
+  description: "Descripción",
+};
+
 interface AguaRiego {
   name: string;
   date: string;
   description: string;
-  nitrato: number;
-  carbonato: number;
-  magnesio: number;
-  fosforo: number;
-  cloruro: number;
-  potasio: number;
-  sulfato: number;
-  sodio: number;
-  amonio: number;
-  bicarbonato: number;
-  calcio: number;
+  no3: number;
+  h2po4: number;
+  so4: number;
+  hco3: number;
+  co3: number;
+  cl: number;
+  k: number;
+  ca: number;
+  mg: number;
+  na: number;
+  nh4: number;
   ph: number;
   conductivity: number;
 }
 
 interface Props {
-  onBack: () => void; // callback para volver atrás
+  onSubmit: (data: Record<string, number>) => void;
+  onBack?: () => void; // callback para volver atrás
 }
 
 
 type PropQuimica = 
-  | "nitrato"
-  | "carbonato"
-  | "fosforo"
-  | "cloruro"
-  | "potasio"
-  | "sodio"
-  | "amonio"
-  | "bicarbonato"
-  | "calcio"
-  | "magnesio"
-  | "sulfato"
+  | "no3"
+  | "h2po4"
+  | "so4"
+  | "hco3"
+  | "co3"
+  | "cl"
+  | "na"
+  | "k"
+  | "ca"
+  | "mg"
+  | "nh4";
 
 
-export default function SolutionsForm({ onBack }: Props) {
+export default function IrrigationWaterForm({ onSubmit, onBack }: Props) {
   const [values, setValues] = useState<AguaRiego>({
     name: "",
     date: "",
     description: "",
-    nitrato: 0,
-    carbonato: 0,
-    magnesio: 0,
-    fosforo: 0,
-    cloruro: 0,
-    potasio: 0,
-    sulfato: 0,
-    sodio: 0,
-    amonio: 0,
-    bicarbonato: 0,
-    calcio: 0,
+    no3: 0,
+    h2po4: 0,
+    so4: 0,
+    hco3: 0,
+    co3: 0,
+    cl: 0,
+    k: 0,
+    ca: 0,
+    mg: 0,
+    na: 0,
+    nh4: 0,
     ph: 0,
     conductivity: 0,
   });
 
   const [units, setUnits] = useState<Record<PropQuimica, string>>({
-    nitrato: "mmol/L",
-    carbonato: "mmol/L",
-    fosforo: "mmol/L",
-    cloruro: "mmol/L",
-    potasio: "mmol/L",
-    sodio: "mmol/L",
-    amonio: "mmol/L",
-    bicarbonato: "mmol/L",
-    calcio: "mmol/L",
-    magnesio: "mmol/L",
-    sulfato: "mmol/L",
+    no3: "mmol/L",
+    h2po4: "mmol/L",
+    so4: "mmol/L",
+    hco3: "mmol/L",
+    co3: "mmol/L",
+    cl: "mmol/L",
+    na: "mmol/L",
+    k: "mmol/L",
+    ca: "mmol/L",
+    mg: "mmol/L",
+    nh4: "mmol/L",
   });
 
   const toast = useToast();
@@ -108,76 +130,12 @@ export default function SolutionsForm({ onBack }: Props) {
     setValues({ ...values, [field]: value });
   };
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-
-    const payload = {
-      ...values,
-      units,
-    };
-
-    console.log("Payload a enviar:", payload);
-
-    try {
-      await api.post<AguaRiego>("/library/waters/", payload);
-      
-      // Mostrar toast
-      toast({
-        title: "Agua de riego guardada",
-        description: `Nombre: ${values.name}`,
-        status: "success",
-        duration: 2500, // dura 1.5 segundos
-        isClosable: true,
-      });
-
-      // Resetear formulario
-      setValues({
-        name: "",
-        date: "",
-        description: "",
-        nitrato: 0,
-        carbonato: 0,
-        magnesio: 0,
-        fosforo: 0,
-        cloruro: 0,
-        potasio: 0,
-        sulfato: 0,
-        sodio: 0,
-        amonio: 0,
-        bicarbonato: 0,
-        calcio: 0,
-        ph: 0,
-        conductivity: 0,
-      });
-      setUnits({
-        nitrato: "mmol/L",
-        carbonato: "mmol/L",
-        fosforo: "mmol/L",
-        cloruro: "mmol/L",
-        potasio: "mmol/L",
-        sodio: "mmol/L",
-        amonio: "mmol/L",
-        bicarbonato: "mmol/L",
-        calcio: "mmol/L",
-        magnesio: "mmol/L",
-        sulfato: "mmol/L",
-      });
-
-      // Llamar a onBack después de un pequeño delay
-      setTimeout(() => {
-        onBack();
-      }, 10);
-
-    } catch (error) {
-      console.log("Error saving water:", error);
-      toast({
-        title: "Error",
-        description: "No se pudo guardar el agua de riego",
-        status: "error",
-        duration: 3000,
-        isClosable: true,
-      });
-    }
+    const numericValues = Object.fromEntries(
+      Object.entries(values).map(([k, v]) => [k, parseFloat(v) || 0])
+    );
+    onSubmit(numericValues);
   };
 
 
@@ -244,11 +202,11 @@ export default function SolutionsForm({ onBack }: Props) {
         </GridItem>
         <GridItem>
           <SimpleGrid columns={{ base: 1, sm: 4, md: 5, lg: 6 }} spacing={6}>
-            {["calcio", "magnesio", "potasio", "sodio", "amonio"].map(
+            {["ca", "k", "mg", "na", "nh4"].map(
               (prop) => (
                 <FormControl key={prop}>
                   <FormLabel textTransform="capitalize" mb={1}>
-                    {prop}
+                    {labels[prop as keyof AguaRiego]}
                   </FormLabel>
                     <InputGroup>
                       <Input
@@ -292,15 +250,15 @@ export default function SolutionsForm({ onBack }: Props) {
         <GridItem>
           <SimpleGrid columns={{ base: 1, sm: 4, md: 5, lg: 6 }} spacing={6}>
             {[
-              "nitrato",
-              "carbonato",
-              "fosforo",
-              "cloruro",
-              "sulfato",
-              "bicarbonato",
+              "no3",
+              "h2po4",
+              "so4",
+              "hco3",
+              "co3",
+              "cl",
             ].map((prop) => (
               <FormControl key={prop}>
-                <FormLabel textTransform="capitalize" mb={1}>{prop}</FormLabel>
+                <FormLabel textTransform="capitalize" mb={1}>{labels[prop as keyof AguaRiego]}</FormLabel>
                   <InputGroup>
                     <Input
                       type="number"

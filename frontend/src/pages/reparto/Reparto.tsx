@@ -1,9 +1,9 @@
 import React from 'react';
-import IrrigationWaterComponent from './IrrigationWaterComponent';
+import Wizard from './Wizard';
 
 const Reparto: React.FC = () => {
   return (
-    <IrrigationWaterComponent/>
+    <Wizard/>
   );
 };
 

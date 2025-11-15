@@ -75,8 +75,8 @@ chemicals = {}
 with open(os.path.join(base_path,"chemical_properties.json"), 'r', encoding='utf-8') as file:
     data = json.load(file)
     for item in data:
-        chemicals[item["name"].lower()] = ChemicalProperty(*item.values())
+        chemicals[item["formula"].lower()] = ChemicalProperty(*item.values())
 
 
 if __name__ == "__main__":
-    print(chemicals['sulfato'].nature)
+    print(chemicals['so4'].nature)
