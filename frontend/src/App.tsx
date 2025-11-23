@@ -37,6 +37,7 @@ function App() {
           pt={0}
           p={6}
           bg={useColorModeValue("light.background.main", "dark.background.main")}
+          // bgGradient="linear(to-br, purple.200, orange.100)"
           color={useColorModeValue("light.text", "dark.text")}
           overflow="auto"
         >

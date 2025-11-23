@@ -300,17 +300,14 @@ export default function FertilizerForm({ onBack }: Props) {
       mt={0}
       pt={0}
       sx={{
-      "tbody tr:nth-child(odd)": { backgroundColor: "gray.100" },  // start stripe with second row
-      "tbody tr:nth-child(even)": { backgroundColor: "white" }
+      // "tbody tr:nth-child(odd)": { backgroundColor: "gray.100" },  // start stripe with second row
+      // "tbody tr:nth-child(even)": { backgroundColor: "white" }
       }}
       >
         <Tbody>
 
         {/* Cationes */}
-        <Tr
-          borderBottom="2px"
-          borderColor="gray.200"
-        >
+        <Tr>
           <Td width="220px" verticalAlign="top" pt="24px" pb="32px" >
             <Heading size="sm">Cationes</Heading>
           </Td>

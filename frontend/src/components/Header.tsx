@@ -40,7 +40,7 @@ const Header: React.FC<HeaderProps> = ({ tabs, onTabChange }) => {
       bg={bgColor}
       color={textColor}
       px={6}
-      py={3}
+      // py={3}
       boxShadow="md"
       borderBottom="1px solid"
       borderColor={useColorModeValue("gray.200", "gray.700")}
@@ -49,18 +49,21 @@ const Header: React.FC<HeaderProps> = ({ tabs, onTabChange }) => {
         {/* Logo + Nombre */}
         <Flex align="center" gap={3}>
           <Image
-            src="/logo.svg" // tu logo aquí
+            src="/logo.png" // tu logo aquí
             alt="Logo"
-            boxSize="40px"
+            boxSize="88px"
             objectFit="contain"
+            p={0}
+            mt={"-10px"}
+            mb={"-10px"}
           />
-          <Heading size="md" fontWeight="regular" fontSize="2xl" fontFamily="'Raleway', sans-serif">
+          <Heading my={3} size="md" fontWeight="regular" fontSize="2xl" fontFamily="'Raleway', sans-serif">
             Cultitecno Nutrigrow
           </Heading>
         </Flex>
 
         {/* Navegación con Tabs y botón de tema */}
-        <Flex align="center" gap={4}>
+        <Flex align="center" gap={4} my={3}>
           <Tabs variant="soft-rounded" colorScheme={tabColorScheme}>
             <TabList gap={4}>
               {tabs.map((tab) => (

@@ -1,0 +1,23 @@
+version: "3.9"
+
+services:
+  backend:
+    build: ./backend
+    container_name: my_backend
+    ports:
+      - "8000:8000"
+    networks:
+      - webapp
+
+  frontend:
+    build: ./frontend
+    container_name: my_frontend
+    ports:
+      - "5173:5173"
+    depends_on:
+      - backend
+    networks:
+      - webapp
+
+networks:
+  webapp:

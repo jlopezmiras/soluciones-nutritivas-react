@@ -7,6 +7,20 @@ import {
   Circle,
   Text,
   useColorModeValue,
+  AlertDialog,
+  AlertDialogBody,
+  AlertDialogContent,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogOverlay,
+  useDisclosure,
+  Modal,
+  ModalBody,
+  ModalContent,
+  ModalFooter,
+  ModalHeader,
+  ModalOverlay,
+  ModalCloseButton,
 } from "@chakra-ui/react";
 import WizardStep1ATargets from "./wizard_steps/WizardStep1ATargets";
 import WizardStep1BLock from "./wizard_steps/WizardStep1BLock";
@@ -18,7 +32,9 @@ import WizardStep3Fertilizers from "./wizard_steps/WizardStep3Fertilizers";
 import TableManager from "./TableManager";
 
 export default function Wizard() {
+
   const [step, setStep] = useState(1);
+  const finishDialog = useDisclosure()
 
   // Payload to the solution manager
   const [data, setData] = useState({
@@ -60,6 +76,7 @@ export default function Wizard() {
   const next = () => {
     console.log("step",step);
     if (step === 4) handleManagerCreation();
+    if (step === totalSteps) handleFinish();
     if (skipToStep) {
       setStep(skipToStep);
       setSkipToStep(null);
@@ -85,13 +102,27 @@ export default function Wizard() {
 
   }
 
+  const handleFinish = () => {
+    // Finalize the manager and fetch results
+    try {
+      // Send to API
+      api.post("/manager/manual/finalize-manager/").then((res) => {
+        console.log("Solution manager finalized:", res.data);
+      });
+    } catch (err) {
+      console.error("Error finalizing solution manager:", err);
+    };
+    finishDialog.onOpen();
+  }
+
   const resetManager = () => {
     try {
       // Send to API
       api.post("/manager/manual/reset-manager/");
     } catch (err) {
       console.error("Error reseting solution manager:", err);
-    }
+    };
+    setManagerMethod(null);
   }
 
 
@@ -137,6 +168,7 @@ export default function Wizard() {
 
 
   return (
+    <>
     <Box 
       p={6} 
       borderWidth="1px" 
@@ -234,5 +266,29 @@ export default function Wizard() {
         </Button>
       </HStack>
     </Box>
+      
+    {/* <Modal
+        isOpen={finishDialog.isOpen}
+        onClose={finishDialog.onClose}
+      >
+        <ModalOverlay/>
+          <ModalContent>
+            <ModalHeader fontSize='lg' fontWeight='bold'>
+              ¡Ajuste finalizado!
+            </ModalHeader>
+            <ModalBody>
+              El ajuste de fertilizantes ha terminado exitosamente. 
+              Los datos se han trasladado a la sección reparto para continuar
+              con el proceso.
+            </ModalBody>
+
+            <ModalFooter>
+              <Button colorScheme='teal' onClick={finishDialog.onClose} ml={3}>
+                Aceptar
+              </Button>
+            </ModalFooter>
+          </ModalContent>
+      </Modal> */}
+    </>
   );
 }

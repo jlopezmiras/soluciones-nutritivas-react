@@ -28,3 +28,7 @@ class TankRead(BaseModel):
 class OtherTanksInfo(BaseModel):
     tankCount: int
     existingFertilizers: List[str]
+
+
+class FlowRequest(BaseModel):
+    flow: float

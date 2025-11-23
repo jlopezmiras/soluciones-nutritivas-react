@@ -2,13 +2,12 @@
 from typing import Dict, List
 
 
-# This should be the same class as FertilizerQuantity in solution manager
 class FertilizerQty:
-    def __init__(self, name: str, quantity: float, density: float):
+    def __init__(self, name: str, quantity: float, density: float, mmol: bool = False):
         self.name = name
         self.quantity = quantity
         self.density = density
-
+        self.mmol = mmol
 
 
 class Tank:
@@ -42,18 +41,18 @@ class TankManager:
             self.next_id = 1
 
             # This would have to change to fetch from the solution_manager
-            self.fertilizer_list = [
-                FertilizerQty("Ácido fosfórico", 1.8, 0.000082),
-                FertilizerQty("Ácido nítrico", 0.54, 0.000078),
-                FertilizerQty("Nitrato cálcico", 2.98, 0.000216),
-                FertilizerQty("Nitrato potásico", 4.40, 0.000101),
-                FertilizerQty("Sulfato potásico", 1.095, 0.000174),
-                FertilizerQty("Sulfato magnésico", 1.09, 0.000246),
-            ]
+            # self.fertilizer_list = [
+            #     FertilizerQty("Ácido fosfórico", 1.8, 0.000082, True),
+            #     FertilizerQty("Ácido nítrico", 0.54, 0.000078, True),
+            #     FertilizerQty("Nitrato cálcico", 2.98, 0.000216, True),
+            #     FertilizerQty("Nitrato potásico", 4.40, 0.000101, True),
+            #     FertilizerQty("Sulfato potásico", 1.095, 0.000174, True),
+            #     FertilizerQty("Sulfato magnésico", 1.09, 0.000246, True),
+            # ]
+            self.fertilizer_list = []
 
-            # This has also to be determined
-            self.total_flow = 6000
-
+            # General settings
+            self.total_flow = 0
 
             self.venturis = {
                 fert.name: self.venturi(fert) for fert in self.fertilizer_list
@@ -63,9 +62,35 @@ class TankManager:
 
             self._initialized = True
 
+    def set_fertilizer_list(self,ferts):
+        self.fertilizer_list = [FertilizerQty(**fert) for fert in ferts]
+
+
+    def set_flow(self, flow:float):
+        self.total_flow = flow
+        self.update_venturis()
+        
+        old_tanks = self.tanks.copy()
+        self.tanks = []
+        for tank in old_tanks:
+            self.add_tank(
+                name=tank.name,
+                volume=tank.volume,
+                main_fertilizer=tank.main_fertilizer,
+                main_fertilizer_qty=tank.fertilizers[tank.main_fertilizer],
+                mixed_fertilizers=[f for f in tank.fertilizers if f != tank.main_fertilizer]
+            )
+
+        self.update_injections()
+
 
     def venturi(self, fert: FertilizerQty):
         return fert.density * fert.quantity * self.total_flow
+    
+    def update_venturis(self):
+        self.venturis = {
+                fert.name: self.venturi(fert) for fert in self.fertilizer_list
+            }
     
 
     def compute_injection(self, tank: Tank):

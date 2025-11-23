@@ -2,7 +2,7 @@
 from fastapi import APIRouter
 from typing import List
 from pydantic import BaseModel
-from api.tanks_schemas import OtherTanksInfo, TankCreate, TankRead
+from api.tanks_schemas import FlowRequest, OtherTanksInfo, TankCreate, TankRead
 from reparto.tanks_manager import TankManager
 
 
@@ -32,7 +32,7 @@ def get_tank(tank_id: int):
 
 @router.put("/tanks/{tank_id}")
 def update_tank(tank_id: int, tank: TankRead):
-    return manager.update_tank(tank_id, tank.name, tank.voulme, tank.fertilizers)
+    return manager.update_tank(tank_id, tank.name, tank.volume, tank.fertilizers)
 
 @router.delete("/tanks/{tank_id}")
 def delete_tank(tank_id: int):
@@ -53,3 +53,9 @@ def get_other_tanks_info():
         "tankCount" : manager.tankCount(), 
         "existingFertilizers" : [tank.main_fertilizer for tank in manager.get_tanks()]
     }
+
+
+@router.post("/total-flow")
+def set_total_flow(flow: FlowRequest):
+    manager.set_flow(flow.flow)
+    return {"message": "Total flow updated"}

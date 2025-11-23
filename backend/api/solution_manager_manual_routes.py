@@ -8,6 +8,7 @@ import database.crud as crud
 from database.crud import Irrigation_Water_DB, Fertilizer_DB
 from api.solution_manager_manual_schemas import FertilizerName, FertilizerRead, FertilizerRows, ManagerResponse, SolutionManagerCreate, SolutionManagerTableRow
 from typing import Dict, List
+from reparto.tanks_manager import TankManager
 
 router = APIRouter()
 
@@ -34,7 +35,7 @@ def cache_fertilizers(payload: SolutionManagerCreate | None = None, db: Session 
 
     manager = SolutionManagerManual()
 
-    # If no payload there is no modification to targer solution or water, just fetch fertilizers
+    # If no payload there is no modification to target solution or water, just fetch fertilizers
     if payload is None:
         manager.fetch_fertilizers(db.query(Fertilizer_DB).all())
         return {
@@ -55,10 +56,18 @@ def cache_fertilizers(payload: SolutionManagerCreate | None = None, db: Session 
         raise HTTPException(status_code=404, detail="Irrigation water not found")
     
     manager.set_irrigation_water(water_db)
+
+    targets = payload.solution["targets"]
+    thresholds_max = {nut: vals for nut, vals in payload.solution["thresholds"]['max'].items() if nut not in targets}
+    thresholds_min = {nut: vals for nut, vals in payload.solution["thresholds"]['min'].items() if nut not in targets}
+    thresholds = {
+        "max" : thresholds_max,
+        "min" : thresholds_min,
+    }
     manager.set_target_solution({
-        "target_nutrients" : payload.solution["targets"], 
+        "target_nutrients" : targets, 
         "locked_nutrients" : payload.solution["locked"], 
-        "threshold_nutrients" : payload.solution["thresholds"]
+        "threshold_nutrients" : thresholds
         })
     manager.fetch_fertilizers(db.query(Fertilizer_DB).all())
 
@@ -136,6 +145,23 @@ def add_fertilizer(fert: FertilizerName):
 
 
 
+# --- Handle finish of manager ---
+@router.post("/finalize-manager")
+def finilize_manager():
+    fertilizer_list = [
+        {
+            "name": fert.name,
+            "quantity": fert.qty,
+            "density": fert.fertilizer.density,
+            "mmol": True,
+        }
+        for fert in SolutionManagerManual().active_fertilizers_qty]
+    print(fertilizer_list)
+    TankManager().set_fertilizer_list(fertilizer_list)
+    return
+
+
+
 # --- TOP TABLE ---
 # rows of fertilizers in the table
 @router.get("/fertilizer-rows", response_model=List[FertilizerRows])
@@ -165,3 +191,5 @@ def get_fertilizers(db: Session = Depends(get_db)):
         )
         for fert in ferts
     ]
+
+
