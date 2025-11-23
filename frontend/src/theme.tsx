@@ -6,6 +6,10 @@ const activeLabelStyles = {
 
 export const theme = extendTheme({
 
+  sizes: {
+      header: "64px", // 🔑 altura del header
+    },
+
   fonts: {
     heading: "'Nokora', sans-serif",
     body: "'Nokora', sans-serif",
@@ -207,6 +211,7 @@ export const theme = extendTheme({
       accent900: { default: "#0c2717", _dark: "#0c2717" },
     },
   },
+
 
 },
 

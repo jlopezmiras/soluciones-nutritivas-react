@@ -12,6 +12,7 @@ import {
   useColorModeValue,
 } from "@chakra-ui/react";
 import { SunIcon, MoonIcon } from "@chakra-ui/icons";
+import { SiZensar } from "react-icons/si";
 
 interface TabOption {
   label: string;
@@ -29,11 +30,13 @@ const Header: React.FC<HeaderProps> = ({ tabs, onTabChange }) => {
   const bgColor = useColorModeValue("light.background.main", "dark.background.main");
   const textColor = useColorModeValue("gray.800", "white");
   const tabColorScheme = useColorModeValue("light.secondary", "light.secondary");
+  
 
   return (
     <Box
       as="header"
       w="100%"
+      h="var(--chakra-sizes-header)"
       bg={bgColor}
       color={textColor}
       px={6}
@@ -51,8 +54,8 @@ const Header: React.FC<HeaderProps> = ({ tabs, onTabChange }) => {
             boxSize="40px"
             objectFit="contain"
           />
-          <Heading size="md" fontWeight="bold">
-            Soluciones Nutritivas
+          <Heading size="md" fontWeight="regular" fontSize="2xl" fontFamily="'Raleway', sans-serif">
+            Cultitecno Nutrigrow
           </Heading>
         </Flex>
 
